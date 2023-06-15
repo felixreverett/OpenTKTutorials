@@ -4,7 +4,7 @@ namespace OpenTKTutorials
 {
     public class Shader : IDisposable
     {
-        int Handle;
+        public readonly int Handle;
 
         public Shader(string vertexPath, string fragmentPath)
         {

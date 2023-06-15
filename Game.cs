@@ -2,12 +2,15 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Diagnostics;
 
 namespace OpenTKTutorials
 {
     public class Game : GameWindow
     {
         public Game(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title }) { }
+
+        private Stopwatch _timer; //to make it change colour
 
         private int _vertexBufferObject;
         private int _vertexArrayObject;
@@ -61,8 +64,12 @@ namespace OpenTKTutorials
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
-            _shader = new Shader("../../../Resources/Shaders/shader.vert", "../../../Resources/Shaders/shader.frag");
+            _shader = new Shader("../../../Resources/Shaders/shader2.vert", "../../../Resources/Shaders/shader2.frag");
             _shader.Use();
+
+            //start the stopwatch to not get a null exception
+            _timer = new Stopwatch();
+            _timer.Start();
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -73,6 +80,12 @@ namespace OpenTKTutorials
 
             //Code goes here.
             _shader.Use();
+
+            // update the uniform color
+            double timeValue = _timer.Elapsed.TotalSeconds;
+            float greenValue = (float)Math.Sin(timeValue) / 2.0f + 0.5f;
+            int vertexColorLocation = GL.GetUniformLocation(_shader.Handle, "ourColor");
+            GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
             GL.BindVertexArray(_vertexArrayObject);
             //draw the element
