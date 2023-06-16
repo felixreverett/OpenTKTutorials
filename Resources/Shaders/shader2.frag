@@ -1,10 +1,8 @@
 #version 330
 out vec4 FragColor;
-
-//in vec4 vertexColor; //the input from the vertex shader
-uniform vec4 ourColor;
+in vec3 ourColor;
 
 void main()
 {
-    FragColor = ourColor;
+    FragColor = vec4(ourColor, 1.0);
 }
