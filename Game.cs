@@ -12,17 +12,19 @@ namespace OpenTKTutorials
 
         private int _vertexBufferObject;
         private int _vertexArrayObject;
-        private Shader _shader;
         private int _elementBufferObject;
+        
+        private Shader _shader;
+        private Texture _texture;
 
-        private readonly float[] _vertices = 
-            {
-                // positions        // colours
-                 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // top right
-                 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-                -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f  // top left
-            };
+        private readonly float[] _vertices =
+        {
+            //Position          Texture coordinates
+             0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // top right
+             0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+            -0.5f,  0.5f, 0.0f, 0.0f, 1.0f  // top left
+        };
 
         private readonly uint[] _indices = {  // note that we start from 0!
         0, 1, 3,   // first triangle
@@ -56,10 +58,6 @@ namespace OpenTKTutorials
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            //location of vertices in _vertices:
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-
             //location of colour information in _vertices:
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
@@ -69,8 +67,19 @@ namespace OpenTKTutorials
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
-            _shader = new Shader("../../../Resources/Shaders/shader2.vert", "../../../Resources/Shaders/shader2.frag");
+            _shader = new Shader("../../../Resources/Shaders/textureShader.vert", "../../../Resources/Shaders/textureShader.frag");
             _shader.Use();
+
+            var vertexLocation = _shader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(vertexLocation);
+            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+
+            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
+            GL.EnableVertexAttribArray(texCoordLocation);
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+
+            _texture = Texture.LoadFromFile("../../../Resources/Textures/container.jpg");
+            _texture.Use(TextureUnit.Texture0);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -79,13 +88,13 @@ namespace OpenTKTutorials
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            //Code goes here.
+            GL.BindVertexArray(_vertexArrayObject);
+
+            _texture.Use(TextureUnit.Texture0);
             _shader.Use();
 
-            GL.BindVertexArray(_vertexArrayObject);
             //draw the element
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-
 
             SwapBuffers();
         }

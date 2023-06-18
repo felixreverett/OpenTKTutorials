@@ -96,5 +96,10 @@ namespace OpenTKTutorials
             GC.SuppressFinalize(this);
         }
 
+        public int GetAttribLocation(string attribName)
+        {
+            return GL.GetAttribLocation(Handle, attribName);
+        }
+
     }
 }
