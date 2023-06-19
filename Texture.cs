@@ -40,7 +40,7 @@ namespace OpenTKTutorials
             _handle = glHandle;
         }
 
-        public void Use(TextureUnit unit)
+        public void Use(TextureUnit unit = TextureUnit.Texture0)
         {
             //bind handle
             GL.ActiveTexture(unit);

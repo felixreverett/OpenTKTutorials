@@ -16,6 +16,7 @@ namespace OpenTKTutorials
         
         private Shader _shader;
         private Texture _texture;
+        private Texture _texture2;
 
         private readonly float[] _vertices =
         {
@@ -73,8 +74,13 @@ namespace OpenTKTutorials
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
-            _texture = Texture.LoadFromFile("../../../Resources/Textures/container.jpg");
+            _texture = Texture.LoadFromFile(@"../../../Resources/Textures/container.jpg");
             _texture.Use(TextureUnit.Texture0);
+
+            _texture2 = Texture.LoadFromFile(@"../../../Resources/Textures/awesomeface.png");
+
+            _shader.SetInt("texture1", 0);
+            _shader.SetInt("texture2", 1);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -82,13 +88,13 @@ namespace OpenTKTutorials
             base.OnRenderFrame(e);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
-
             GL.BindVertexArray(_vertexArrayObject);
 
             _texture.Use(TextureUnit.Texture0);
+            _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            //draw the element
+            //draw the elements (two triangles to make a rectangle)
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
 
             SwapBuffers();
