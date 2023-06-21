@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -90,9 +91,16 @@ namespace OpenTKTutorials
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.BindVertexArray(_vertexArrayObject);
 
+            Matrix4 rotation = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(90.0f));
+            Matrix4 scale = Matrix4.CreateScale(0.5f, 0.5f, 0.5f);
+            Matrix4 trans = rotation * scale;
+
             _texture.Use(TextureUnit.Texture0);
             _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
+
+            int location = GL.GetUniformLocation(_shader.Handle, "transform");
+            GL.UniformMatrix4(location, true, ref trans);
 
             //draw the elements (two triangles to make a rectangle)
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
