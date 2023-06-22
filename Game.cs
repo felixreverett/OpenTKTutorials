@@ -19,6 +19,9 @@ namespace OpenTKTutorials
         private Texture _texture;
         private Texture _texture2;
 
+        private Matrix4 _view;
+        private Matrix4 _projection;
+
         private readonly float[] _vertices =
         {
             //Position          Texture coordinates
@@ -82,6 +85,12 @@ namespace OpenTKTutorials
 
             _shader.SetInt("texture1", 0);
             _shader.SetInt("texture2", 1);
+
+            // for now we just set it backwards (camera next tutorial)
+            _view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
+
+            // for the projection we're using a perspective projection
+            _projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45f), Size.X / (float)Size.Y, 0.1f, 100.0f);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -91,16 +100,18 @@ namespace OpenTKTutorials
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.BindVertexArray(_vertexArrayObject);
 
-            Matrix4 rotation = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(90.0f));
-            Matrix4 scale = Matrix4.CreateScale(0.5f, 0.5f, 0.5f);
-            Matrix4 trans = rotation * scale;
-
             _texture.Use(TextureUnit.Texture0);
             _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            int location = GL.GetUniformLocation(_shader.Handle, "transform");
-            GL.UniformMatrix4(location, true, ref trans);
+            // the model matrix
+            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(-55.0f));
+
+            //int location = GL.GetUniformLocation(_shader.Handle, "transform");
+            //GL.UniformMatrix4(location, true, ref trans);
+            _shader.SetMatrix4("model", model);
+            _shader.SetMatrix4("view", _view);
+            _shader.SetMatrix4("projection", _projection);
 
             //draw the elements (two triangles to make a rectangle)
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
