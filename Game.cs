@@ -18,11 +18,15 @@ namespace OpenTKTutorials
         private Texture _texture;
         private Texture _texture2;
 
+        // camera variables
+        float speed = 0.5f;
+        private Camera _camera;
+        private MouseState mouse;
+        private bool _firstMove = true;
+        private Vector2 _lastPos;
+
         // A double to hold how long time has passed since the program was opened.
         private double _time;
-
-        private Matrix4 _view;
-        private Matrix4 _projection;
 
         public readonly float[] _verticesCube = 
         {
@@ -73,11 +77,70 @@ namespace OpenTKTutorials
         {
             base.OnUpdateFrame(args);
 
+            if (!IsFocused) // check to see if the window is focused
+            {
+                return;
+            }
+
+            const float sensitivity = 0.2f;
+
+            // Keyboard movement
+
             KeyboardState input = KeyboardState;
 
             if (input.IsKeyDown(Keys.Escape))
             {
                 Close();
+            }
+
+            if (input.IsKeyDown(Keys.W))
+            {
+                _camera.Position += _camera.Front * speed * (float)args.Time; //Forward 
+            }
+
+            if (input.IsKeyDown(Keys.S))
+            {
+                _camera.Position -= _camera.Front * speed * (float)args.Time; //Backwards
+            }
+
+            if (input.IsKeyDown(Keys.A))
+            {
+                _camera.Position -= _camera.Right * speed * (float)args.Time; //Left
+            }
+
+            if (input.IsKeyDown(Keys.D))
+            {
+                _camera.Position += _camera.Right * speed * (float)args.Time; //Right
+            }
+
+            if (input.IsKeyDown(Keys.Space))
+            {
+                _camera.Position += _camera.Up * speed * (float)args.Time; //Up 
+            }
+
+            if (input.IsKeyDown(Keys.LeftShift))
+            {
+                _camera.Position -= _camera.Up * speed * (float)args.Time; //Down
+            }
+
+            // Get the mouse state
+            var mouse = MouseState;
+
+            // Mouse movement
+
+            if (_firstMove)
+            {
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+                _firstMove = false;
+            }
+            else
+            {
+                var deltaX = mouse.X - _lastPos.X;
+                var deltaY = mouse.Y - _lastPos.Y;
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+
+                _camera.Yaw += deltaX * sensitivity;
+                _camera.Pitch -= deltaY * sensitivity;
             }
         }
 
@@ -117,11 +180,9 @@ namespace OpenTKTutorials
             _shader.SetInt("texture1", 0);
             _shader.SetInt("texture2", 1);
 
-            // for now we just set it backwards (camera next tutorial)
-            _view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
+            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
 
-            // for the projection we're using a perspective projection
-            _projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45f), Size.X / (float)Size.Y, 0.1f, 100.0f);
+            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -141,8 +202,8 @@ namespace OpenTKTutorials
             var model = Matrix4.Identity * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(_time));
 
             _shader.SetMatrix4("model", model);
-            _shader.SetMatrix4("view", _view);
-            _shader.SetMatrix4("projection", _projection);
+            _shader.SetMatrix4("view", _camera.GetViewMatrix());
+            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
